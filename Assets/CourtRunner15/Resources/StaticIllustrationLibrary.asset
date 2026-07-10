@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0299f04eb9b5ee24eb8af3621b4cc854, type: 3}
+  m_Name: StaticIllustrationLibrary
+  m_EditorClassIdentifier: 
+  Entries:
+  - Name: MoscowCity_Panorama
+    Texture: {fileID: 2800000, guid: 75394a27910931642a39c0d0d70ab6ea, type: 3}
+  - Name: ASGM_Facade
+    Texture: {fileID: 2800000, guid: cc56f8c258627d046b909109840b8319, type: 3}
+  - Name: Rosreestr_Facade
+    Texture: {fileID: 2800000, guid: 5436763e4c1baf34c96cbba8371ea1d8, type: 3}
+  - Name: Rosreestr_Sign
+    Texture: {fileID: 2800000, guid: 6953b4b457ef03f49b74b03acb7bf400, type: 3}
+  - Name: CourtQueue_Hall
+    Texture: {fileID: 2800000, guid: 863126c29b2f31341a392d1438d64211, type: 3}
+  - Name: BossJudge_CutIn
+    Texture: {fileID: 2800000, guid: 0557a87d935165f42af87e7ec7894577, type: 3}
+  - Name: BossDeputy_CutIn
+    Texture: {fileID: 2800000, guid: 95d67c47b845fe74c8aa56c8528db463, type: 3}
+  - Name: BossChairman_CutIn
+    Texture: {fileID: 2800000, guid: 656f238c787b5304aacc10823a056546, type: 3}

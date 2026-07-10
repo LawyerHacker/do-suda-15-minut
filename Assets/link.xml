@@ -1,0 +1,8 @@
+<linker>
+  <!-- WebGL: Strip Engine Code выпиливал PhysicsModule, из-за чего
+       GameObject.CreatePrimitive спамил в консоль
+       «Can't add component because class 'CapsuleCollider' doesn't exist!».
+       Коллайдеры геймплеем не используются (коллизии — ручные AABB),
+       но модуль сохраняем для чистой консоли и паритета с Windows. -->
+  <assembly fullname="UnityEngine.PhysicsModule" preserve="all"/>
+</linker>

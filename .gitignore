@@ -1,0 +1,26 @@
+# Unity generated data: recreated locally and not part of source code
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Ll]ogs/
+/UserSettings/
+
+# Local builds are published separately (Release or GitHub Pages), never committed by accident
+/[Bb]uild/
+/BuildWebGL/
+
+# Local-only notes and reference material may contain machine or infrastructure details
+/AGENTS.md
+/References/
+
+# IDE and OS-specific files
+/.vs/
+/*.csproj
+/*.sln
+/*.user
+/*.pidb
+/*.booproj
+/*.svd
+/.DS_Store
+Thumbs.db
+/*.lnk

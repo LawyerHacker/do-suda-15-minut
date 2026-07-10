@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0b0b10">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="До суда 15 минут">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>До суда 15 минут</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #0b0b10;
+        touch-action: none;
+        overscroll-behavior: none;
+      }
+      /* position:fixed гасит pull-to-refresh и «резинку» iOS Safari. */
+      body {
+        position: fixed;
+        inset: 0;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #unity-container {
+        position: fixed;
+        inset: 0;
+        background: #0b0b10;
+      }
+      /* Канвас на весь экран с учётом «чёлки» iPhone (safe-area). */
+      #unity-canvas {
+        position: fixed;
+        left: env(safe-area-inset-left, 0px);
+        top: env(safe-area-inset-top, 0px);
+        width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        background: #0b0b10;
+        touch-action: none;
+        outline: none;
+      }
+      #unity-loading-bar {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        text-align: center;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #f5f6fa;
+        z-index: 20;
+      }
+      #loading-title {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        color: #f5f6fa;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+      }
+      #loading-title .gold { color: #ffcc40; }
+      #loading-sub {
+        font-size: 14px;
+        color: #8d93a6;
+        margin-bottom: 22px;
+      }
+      #unity-progress-bar-empty {
+        width: 260px;
+        height: 14px;
+        margin: 0 auto;
+        border: 1px solid #ffcc40;
+        border-radius: 8px;
+        background: rgba(255, 204, 64, 0.08);
+        overflow: hidden;
+      }
+      #unity-progress-bar-full {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #b8860b, #ffcc40);
+        border-radius: 6px;
+        transition: width 0.15s ease-out;
+      }
+      #unity-warning {
+        position: fixed;
+        left: 50%;
+        top: 4%;
+        transform: translateX(-50%);
+        background: transparent;
+        text-align: center;
+        font-family: "Segoe UI", Arial, sans-serif;
+        z-index: 30;
+      }
+      #fullscreen-button {
+        position: fixed;
+        right: calc(env(safe-area-inset-right, 0px) + 14px);
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+        padding: 10px 14px;
+        border: 1px solid rgba(255, 204, 64, 0.58);
+        border-radius: 8px;
+        background: rgba(12, 12, 18, 0.72);
+        color: #f5f6fa;
+        font: 600 14px/1 "Segoe UI", Arial, sans-serif;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+        z-index: 35;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+      }
+      #fullscreen-button:active {
+        transform: scale(0.97);
+      }
+      body.fullscreen-active #fullscreen-button {
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0.88);
+      }
+      #ios-pwa-hint {
+        position: fixed;
+        left: calc(env(safe-area-inset-left, 0px) + 12px);
+        right: calc(env(safe-area-inset-right, 0px) + 12px);
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 9px 10px 9px 12px;
+        border: 1px solid rgba(255, 204, 64, 0.35);
+        border-radius: 8px;
+        background: rgba(12, 12, 18, 0.84);
+        color: #f5f6fa;
+        font: 500 13px/1.25 "Segoe UI", Arial, sans-serif;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+        z-index: 36;
+      }
+      #ios-pwa-hint button {
+        width: 28px;
+        height: 28px;
+        flex: 0 0 28px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        color: #f5f6fa;
+        font: 700 18px/1 "Segoe UI", Arial, sans-serif;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body.show-ios-pwa-hint #ios-pwa-hint {
+        display: flex;
+      }
+      body.show-ios-pwa-hint #fullscreen-button {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 68px);
+      }
+      /* Оверлей «поверните телефон»: только портрет + сенсорное устройство. */
+      #rotate-overlay {
+        position: fixed;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: rgba(8, 8, 14, 0.96);
+        color: #f5f6fa;
+        font-family: "Segoe UI", Arial, sans-serif;
+        text-align: center;
+        z-index: 40;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      #rotate-overlay .phone {
+        font-size: 64px;
+        animation: tilt 1.6s ease-in-out infinite;
+      }
+      #rotate-overlay .msg {
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+      #rotate-overlay .hint {
+        font-size: 14px;
+        color: #8d93a6;
+      }
+      @keyframes tilt {
+        0%, 20% { transform: rotate(0deg); }
+        55%, 80% { transform: rotate(90deg); }
+        100% { transform: rotate(90deg); }
+      }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate-overlay { display: flex; }
+      }
+      @media (max-width: 540px) {
+        #fullscreen-button {
+          right: calc(env(safe-area-inset-right, 0px) + 10px);
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+          padding: 9px 12px;
+          font-size: 13px;
+        }
+        body.show-ios-pwa-hint #fullscreen-button {
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 64px);
+        }
+      }
+      @media (max-height: 480px) and (pointer: coarse) {
+        #ios-pwa-hint {
+          left: calc(env(safe-area-inset-left, 0px) + 10px);
+          right: auto;
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+          max-width: min(420px, calc(100vw - 148px));
+          padding: 8px 8px 8px 10px;
+          font-size: 12px;
+        }
+        body.show-ios-pwa-hint #fullscreen-button {
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="loading-title">ДО СУДА <span class="gold">15 МИНУТ</span></div>
+        <div id="loading-sub">юридический 3D-раннер · загрузка…</div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+    </div>
+    <button id="fullscreen-button" type="button" aria-label="На весь экран">На весь экран</button>
+    <div id="ios-pwa-hint" role="note" aria-live="polite">
+      <span>Для полноэкранного режима: Поделиться → На экран Домой</span>
+      <button id="ios-pwa-hint-close" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div id="rotate-overlay">
+      <div class="phone">📱</div>
+      <div class="msg">Поверните устройство горизонтально</div>
+      <div class="hint">Игра работает в ландшафтной ориентации</div>
+    </div>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+      var unityContainer = document.querySelector("#unity-container");
+      var fullscreenButton = document.querySelector("#fullscreen-button");
+      var iosPwaHintClose = document.querySelector("#ios-pwa-hint-close");
+
+      // Долгий тап не должен открывать контекстное меню поверх игры.
+      canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: #7a1f1f; color: #fff; padding: 10px; border-radius: 6px;';
+        else {
+          if (type == 'warning') div.style = 'background: #8a6d1a; color: #fff; padding: 10px; border-radius: 6px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      var config = {
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_THREADS
+        workerUrl: buildUrl + "/{{{ WORKER_FILENAME }}}",
+#endif
+#if USE_WASM
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#endif
+#if MEMORY_FILENAME
+        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        showBanner: unityShowBanner,
+      };
+
+      // Телефон/планшет: повышаем резкость, но не даём DPR съесть весь GPU.
+      // Десктоп: не выше 2x, чтобы 4K/Retina не убивали FPS.
+      var isMobileLike = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 1 && /Mac/i.test(navigator.platform)) ||
+        (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+      config.devicePixelRatio = isMobileLike
+        ? Math.min(window.devicePixelRatio || 1, 1.75)
+        : Math.min(window.devicePixelRatio || 1, 2);
+
+      function fullscreenElement() {
+        return document.fullscreenElement || document.webkitFullscreenElement || null;
+      }
+
+      function updateFullscreenState() {
+        document.body.classList.toggle("fullscreen-active", !!fullscreenElement());
+      }
+
+      async function tryLockLandscape() {
+        try {
+          if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock("landscape");
+          }
+        } catch (e) {
+          // На iOS и части Android браузер может отказать. Игра продолжит работать.
+        }
+      }
+
+      async function enterFullscreen() {
+        var target = unityContainer || document.documentElement;
+        try {
+          if (target.requestFullscreen) {
+            await target.requestFullscreen();
+          } else if (target.webkitRequestFullscreen) {
+            target.webkitRequestFullscreen();
+          } else if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+          }
+          updateFullscreenState();
+          if (/Android/i.test(navigator.userAgent) && fullscreenElement()) {
+            await tryLockLandscape();
+          }
+        } catch (e) {
+          updateFullscreenState();
+        } finally {
+          canvas.focus();
+        }
+      }
+
+      fullscreenButton.addEventListener("click", enterFullscreen);
+      document.addEventListener("fullscreenchange", updateFullscreenState);
+      document.addEventListener("webkitfullscreenchange", updateFullscreenState);
+
+      var isIphoneSafari = /iPhone/i.test(navigator.userAgent) &&
+        /Safari/i.test(navigator.userAgent) &&
+        !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent);
+      var isStandalone = window.navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+        (window.matchMedia && window.matchMedia("(display-mode: fullscreen)").matches);
+      var pwaHintClosed = false;
+      try {
+        pwaHintClosed = window.localStorage.getItem("courtRunnerIosPwaHintClosed") === "1";
+      } catch (e) {
+        pwaHintClosed = false;
+      }
+      if (isIphoneSafari && !isStandalone && !pwaHintClosed) {
+        document.body.classList.add("show-ios-pwa-hint");
+      }
+      iosPwaHintClose.addEventListener("click", function () {
+        document.body.classList.remove("show-ios-pwa-hint");
+        try {
+          window.localStorage.setItem("courtRunnerIosPwaHintClosed", "1");
+        } catch (e) {}
+        canvas.focus();
+      });
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then(function (unityInstance) {
+          loadingBar.style.display = "none";
+          canvas.focus();
+        }).catch(function (message) {
+          unityShowBanner(message, 'error');
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "До суда 15 минут",
+  "short_name": "До суда",
+  "description": "Юридический 3D-раннер",
+  "lang": "ru",
+  "start_url": ".",
+  "scope": ".",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0b0b10",
+  "theme_color": "#0b0b10"
+}
